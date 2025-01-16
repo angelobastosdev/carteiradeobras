@@ -30,7 +30,7 @@ def calcular_distancia(ponto1, ponto2):
     return geodesic(ponto1, ponto2).km  # Distância em quilômetros
 
 # Função para criar o mapa baseado na coordenação selecionada
-def criar_mapa(coord_selecionada, eventos_selecionados, mapbox_token, estilo_mapbox, estilo_selecionado):
+def criar_mapa(coord_selecionada, eventos_selecionados):
     # Filtrar o DataFrame com a coordenação escolhida
     df_filtrado = df[df['Coordenação'] == coord_selecionada]
 
@@ -50,33 +50,8 @@ def criar_mapa(coord_selecionada, eventos_selecionados, mapbox_token, estilo_map
         location=[lat_media, lon_media], 
         zoom_start=7, 
         control_scale=True,  # Habilitar controle de escala
-        tiles=None  # Não carregar o OpenStreetMap por padrão
+        tiles='OpenStreetMap'  # Usar apenas OpenStreetMap
     )
-
-    # Adicionar o estilo Mapbox, OpenStreetMap ou Satélite, dependendo da escolha do usuário
-    if estilo_selecionado == 'Mapbox':
-        folium.TileLayer(
-            tiles=f"https://api.mapbox.com/styles/v1/{estilo_mapbox}/tiles/256/{{z}}/{{x}}/{{y}}?access_token={mapbox_token}",
-            attr="Mapbox",
-            name="Mapbox",  # Nome da camada
-            overlay=True,
-            control=True  # Controlar a visibilidade dessa camada
-        ).add_to(mapa)
-    elif estilo_selecionado == 'Satélite':
-        folium.TileLayer(
-            tiles=f"https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/256/{{z}}/{{x}}/{{y}}?access_token={mapbox_token}",
-            attr="Mapbox",
-            name="Satélite",  # Nome da camada
-            overlay=True,
-            control=True  # Controlar a visibilidade dessa camada
-        ).add_to(mapa)
-    else:
-        folium.TileLayer(
-            'OpenStreetMap',
-            name="OpenStreetMap",
-            overlay=True,
-            control=True
-        ).add_to(mapa)
 
     # Definir mapeamento de cores para os diferentes valores de descricao_medida
     cores_evento = {
@@ -143,21 +118,8 @@ eventos_selecionados = st.sidebar.multiselect(
     default=eventos_filtrados.tolist()  # Por padrão, selecionar todos os eventos
 )
 
-# Adicionar o dropdown para seleção do estilo do mapa
-estilo_selecionado = st.sidebar.selectbox(
-    "Selecione o Estilo do Mapa", 
-    ["Mapbox", "OpenStreetMap", "Satélite"], 
-    index=0  # Valor padrão: Mapbox
-)
-
-# Definir o seu Mapbox Access Token
-mapbox_token = "pk.eyJ1IjoiYW5nZWxvYmFzdG9zIiwiYSI6ImNsd3RtMnJqaDA1NDUyaXE0b3Z6NWNxZG8ifQ.devWRiCoXjwoVKHhOP5fmw"
-
-# O estilo personalizado Mapbox
-estilo_mapbox = "angelobastos/clx27ntdu02da01qmabk942sc"  # Apenas a parte do ID, sem "mapbox://styles/"
-
 # Criar o mapa com base na seleção
-mapa_html = criar_mapa(coord_selecionada, eventos_selecionados, mapbox_token, estilo_mapbox, estilo_selecionado)
+mapa_html = criar_mapa(coord_selecionada, eventos_selecionados)
 
 # Exibir o mapa no Streamlit com o CSS ajustado
 components.html(mapa_html, height=1000)
